@@ -1,19 +1,11 @@
-/**
- * useSegmentDetail - 客群詳情邏輯層
- * 提供：詳情載入、跨頁頁/跨元件快取、真後端 API 串接
- */
+import { ref, watch, unref, type MaybeRef } from 'vue'
+import { getSegmentDetail, type SegmentCardDto } from '@/views/management/segment/segment-api'
 
-import { computed, ref, watch, unref, type MaybeRef } from 'vue'
-import { type SegmentDetailDto } from '@/beans/segment-bean'
-import { getSegmentDetail } from '@/views/management/segment/segment-api'
-
-/**
- * 全域快取池（同一個 SPA 生命週期內避免重複查詢）
- */
-const globalSegmentCache = new Map<string, SegmentDetailDto>()
+// 全域快取池 (同一 SPA 生命週期內避免重複查詢)
+const globalSegmentCache = new Map<string, any>()
 
 export function useSegmentDetailCache(segmentCodeRef: MaybeRef<string>) {
-  const segment = ref<SegmentDetailDto | null>(null)
+  const segment = ref<any | null>(null)
   const loading = ref(false)
 
   async function fetchDetail(code: string) {
@@ -22,7 +14,7 @@ export function useSegmentDetailCache(segmentCodeRef: MaybeRef<string>) {
       return
     }
 
-    // 1. 優先檢查快取
+    // 1. 優先快取讀取
     if (globalSegmentCache.has(code)) {
       segment.value = globalSegmentCache.get(code) ?? null
       return
@@ -32,7 +24,7 @@ export function useSegmentDetailCache(segmentCodeRef: MaybeRef<string>) {
     try {
       // 2. 正式向後端發送請求
       const res = await getSegmentDetail(code)
-      if (res.data?.success && res.data.data) {
+      if (res.data.success && res.data.data) {
         const detail = res.data.data
         segment.value = detail
         globalSegmentCache.set(code, detail)
@@ -47,7 +39,7 @@ export function useSegmentDetailCache(segmentCodeRef: MaybeRef<string>) {
     }
   }
 
-  // 監聽傳入的客群代碼變化（支援 Ref 與普通字串），立即執行查詢
+  // 監聽傳入的客群代碼變化
   watch(
     () => unref(segmentCodeRef),
     (newCode) => {
@@ -60,7 +52,7 @@ export function useSegmentDetailCache(segmentCodeRef: MaybeRef<string>) {
 
   return {
     segment,
-    loading,
+    loading
   }
 }
 

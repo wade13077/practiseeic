@@ -1,0 +1,64 @@
+package com.example.backend.Repository;
+
+// package com.esb.icrm.management.segment.infrastructure.query;
+
+import com.example.backend.dao.SegmentDocument;
+
+@Repository
+public class SegmentQueryRepository {
+    /** MongoDB Collection 名稱 */
+    private static final String COLL_MANAGEMENT_SEGMENT = "COLL_MANAGEMENT_SEGMENT";
+
+    /** MongoTemplate */
+    private final MongoTemplate mongoTemplate;
+
+    public SegmentQueryRepository(MongoTemplate mongoTemplate) {
+        this.mongoTemplate = mongoTemplate;
+    }
+
+    /**
+     * 取得資料庫最新兩代資料日期（dataDt 降冪排序）
+     *
+     * @return 最多 2 筆 dataDt（index 0 為最新代，index 1 為前代）
+     */
+    public List<String> findLatestTwoDataDt() {
+        Aggregation agg = Aggregation.newAggregation(
+                Aggregation.group("dataDt"),
+                Aggregation.sort(Sort.Direction.DESC, "_id"),
+                Aggregation.limit(2));
+
+        AggregationResults<Document> results = mongoTemplate.aggregate(agg, COLL_MANAGEMENT_SEGMENT, Document.class);
+        return results.getMappedResults().stream()
+                .map(doc -> doc.getString("_id"))
+                .filter(Objects::nonNull)
+                .toList();
+    }
+
+    /**
+     * 查詢指定資料日期的所有客群
+     *
+     * @param dataDt 資料日期 (YYYYMMDD)
+     * @return 客群 Document 清單
+     */
+    public List<SegmentDocument> findByDataDt(String dataDt) {
+        Query query = new Query(Criteria.where("dataDt").is(dataDt));
+        return mongoTemplate.find(query, SegmentDocument.class);
+    }
+
+    /**
+     * 查詢指定日期與客群代碼的客群詳情
+     *
+     * @param segmentCode 客群代碼
+     * @param dataDt      資料日期 (YYYYMMDD)
+     * @return 客群 Document
+     */
+    public Optional<SegmentDocument> findByCodeAndDataDt(String segmentCode, String dataDt) {
+        Criteria criteria = new Criteria().andOperator(
+                Criteria.where("dataDt").is(dataDt),
+                new Criteria().orOperator(
+                        Criteria.where("code").is(segmentCode),
+                        Criteria.where("segmentCode").is(segmentCode)));
+        Query query = new Query(criteria);
+        return Optional.ofNullable(mongoTemplate.findOne(query, SegmentDocument.class));
+    }
+}
