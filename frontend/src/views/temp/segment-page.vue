@@ -1,0 +1,22 @@
+<chart-card>
+  <div class="chart-box h190 product-structure-split">
+    <bar-chart
+      :aria-label="barCharts.productBar1.ariaLabel"
+      :labels="barCharts.productBar1.labels"
+      :customer-data="barCharts.productBar1.customerData"
+      :cluster-data="barCharts.productBar1.clusterData"
+      :y-max="barCharts.productBar1.yMax"
+      :step-size="barCharts.productBar1.stepSize"
+      :wrapper-class="barCharts.productBar1.wrapperClass"
+    />
+    <bar-chart
+      :aria-label="barCharts.productBar2.ariaLabel"
+      :labels="barCharts.productBar2.labels"
+      :customer-data="barCharts.productBar2.customerData"
+      :cluster-data="barCharts.productBar2.clusterData"
+      :y-max="barCharts.productBar2.yMax"
+      :step-size="barCharts.productBar2.stepSize"
+      :wrapper-class="barCharts.productBar2.wrapperClass"
+    />
+  </div>
+</chart-card>
