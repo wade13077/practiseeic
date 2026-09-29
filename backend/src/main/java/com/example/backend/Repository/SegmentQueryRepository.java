@@ -1,8 +1,18 @@
 package com.example.backend.Repository;
 
-// package com.esb.icrm.management.segment.infrastructure.query;
+import com.esb.icrm.management.segment.infrastructure.document.SegmentDocument;
+import org.bson.Document;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.aggregation.Aggregation;
+import org.springframework.data.mongodb.core.aggregation.AggregationResults;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.stereotype.Repository;
 
-import com.example.backend.dao.SegmentDocument;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 @Repository
 public class SegmentQueryRepository {
@@ -17,9 +27,9 @@ public class SegmentQueryRepository {
     }
 
     /**
-     * 取得資料庫最新兩代資料日期（dataDt 降冪排序）
+     * 取得資料庫中最新兩筆資料日期 (dataDt 降冪排序)
      *
-     * @return 最多 2 筆 dataDt（index 0 為最新代，index 1 為前代）
+     * @return 最多 2 筆 dataDt (index 0 為最新代, index 1 為前代)
      */
     public List<String> findLatestTwoDataDt() {
         Aggregation agg = Aggregation.newAggregation(
@@ -27,7 +37,7 @@ public class SegmentQueryRepository {
                 Aggregation.sort(Sort.Direction.DESC, "_id"),
                 Aggregation.limit(2));
 
-        AggregationResults<Document> results = mongoTemplate.aggregate(agg, COLL_MANAGEMENT_SEGMENT, Document.class);
+        AggregationResults<Document> results = mongoTemplate.aggregate(agg, "COLL_MANAGEMENT_SEGMENT", Document.class);
         return results.getMappedResults().stream()
                 .map(doc -> doc.getString("_id"))
                 .filter(Objects::nonNull)
